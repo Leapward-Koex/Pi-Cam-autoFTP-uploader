@@ -13,18 +13,19 @@ from os.path import isfile, join
 import time
 import socket
 
-# Parameters for the FTP server the camera is going to upload to
-server = ''  # Server to upload to
-username = ''  # Username for server
-password = ''  # Password for server
-
-# Folder to archive HD versions of the sent images
-archive_folder = '/home/pi/Desktop/Archive/'
-
 
 class snap:
 
     def __init__(self):
+        
+        # Parameters for the FTP server the camera is going to upload to
+        self.server = ''  # Server to upload to
+        self.username = ''  # Username for server
+        self.password = ''  # Password for server
+
+        # Folder to archive HD versions of the sent images
+        self.archive_folder = '/home/pi/Desktop/Archive/'
+        
         self.cam = PiCamera()
         self.cam.resolution = (2844, 1600)
         self.dir = '/home/pi/Desktop/image'  # Working director, 'image' is the beginnings of the filenames
@@ -102,8 +103,8 @@ class snap:
             if time.time() - self.lastupload_time > self.wait_time \
                     and self.threshold < self.uploadthreshold or not self.flag:
                 print("uploading")
-                ftp = FTP(server)
-                ftp.login(username, password)
+                ftp = FTP(self.server)
+                ftp.login(self.username, self.password)
                 with open(self.dir + str(self.image_most_diff) + '.jpg', 'rb') as file:
                     print("FTP Response:", ftp.storbinary('STOR image.jpg', file))
                 ftp.close()
@@ -116,7 +117,7 @@ class snap:
                     file_mod_time_epoch = os.path.getmtime(file_dir)
                     file_mod_time = time.strftime("%Y-%m-%d %H;%M;%S", time.localtime(file_mod_time_epoch))
                     shutil.copy(self.dir + str(self.image_most_diff) + 'HD.jpg',
-                                archive_folder + '{}.jpg'.format(file_mod_time))
+                                self.archive_folder + '{}.jpg'.format(file_mod_time))
                 except FileNotFoundError:
                     print("Archive file is not reachable")
                 self.uploads += 1
